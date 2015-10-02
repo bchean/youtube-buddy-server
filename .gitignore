@@ -1,0 +1,8 @@
+# Dependency directory
+node_modules
+
+# Config file (this contains sensitive data)
+config.js
+
+# Vim swap files
+*swp

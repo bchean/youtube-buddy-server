@@ -1,0 +1,6 @@
+module.exports = {
+    mongoDbName: 'youtube-buddy',
+    mongoHostname: 'localhost',
+    expressPort: 80,
+    youtubeApiKey: '<your-youtube-api-key>'
+};

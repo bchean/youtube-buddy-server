@@ -1,0 +1,11 @@
+{
+    "newcap": true,
+    "nonbsp": true,
+    "nonew": true,
+    "quotmark": "single",
+    "undef": true,
+    "unused": true,
+
+    "mocha": true,
+    "node": true
+}
