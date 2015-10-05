@@ -7,7 +7,7 @@ var LENGTH_SECONDS_FIELDNAME = 'lengthSeconds';
 var POPULARITY_FIELDNAME = 'popularity';
 
 function initVideoDbSchema(mongoose) {
-    mongoose.connect('mongodb://' + config.mongoHostname + '/' + config.mongoDbName);
+    mongoose.connect(config.mongoUri);
 
     var Schema = mongoose.Schema;
 
@@ -131,7 +131,7 @@ function Handlers(mongoose, youtubeWrapper) {
 
     function trimRawVideo(rawVideo) {
         var trimmedVideo = {};
-        for (var field in videoDb.model.paths) {
+        for (var field in videoDb.model.schema.paths) {
             // Don't copy built-in Mongo fields
             if (field[0] !== '_') {
                 trimmedVideo[field] = rawVideo[field];
