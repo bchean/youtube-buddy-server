@@ -4,5 +4,8 @@ node_modules
 # Config variables (sensitive data)
 .env
 
+# Log files
+*log
+
 # Vim swap files
 *swp
