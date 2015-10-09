@@ -9,7 +9,7 @@ var jqXHR = $.ajax({
     });
     for (var i = 0; i < data.length; i++) {
         var video = data[i];
-        $('.dashboard').append('<div class="video">[' + video.numImpressions + '] <a href="https://www.youtube.com/watch?v=' + video.youtubeId + '">' + video.title + '</a></div>');
+        $('.dashboard').append('<div class="video">[' + video.numImpressions + '] <a href="https://www.youtube.com/watch?v=' + video.youtubeId + '" target="_blank">' + video.title + '</a></div>');
     }
 }).fail(function(jqXHR, textStatus, errorThrown) {
     $('.dashboard').val(errorThrown);
