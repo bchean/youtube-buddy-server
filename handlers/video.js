@@ -1,4 +1,4 @@
-var config = require('./config');
+var config = require('../config');
 
 var YOUTUBE_ID_FIELDNAME = 'youtubeId';
 var TITLE_FIELDNAME = 'title';
@@ -41,7 +41,7 @@ function initVideoDbSchema(mongoose) {
     };
 }
 
-function Handlers(mongoose, youtubeWrapper) {
+function VideoHandlers(mongoose, youtubeWrapper) {
     var self = this;
 
     var videoDb = initVideoDbSchema(mongoose);
@@ -181,4 +181,4 @@ function Handlers(mongoose, youtubeWrapper) {
     self.deleteVideo = deleteVideo;
 }
 
-module.exports = Handlers;
+module.exports = VideoHandlers;
