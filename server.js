@@ -2,7 +2,7 @@ var express = require('express'),
     mongoose = require('mongoose'),
     YouTubeService = require('youtube-node'),
     config = require('./config'),
-    VideoHandlers = require('./handlers/video'),
+    VideoHandlers = require('./mongo/video'),
     YouTubeWrapper = require('./youtube');
 
 var ALL_VIDEOS_URI = '/api/videos';

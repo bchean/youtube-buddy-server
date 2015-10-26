@@ -14,7 +14,7 @@
   },
   "scripts": {
     "lint": "jshint . || true",
-    "test": "mocha test/ --grep unit",
+    "test": "mocha --recursive --grep unit test/",
     "test-all": "mocha test/"
   }
 }

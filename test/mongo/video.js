@@ -2,8 +2,8 @@ var mongoose = require('mongoose'),
     should = require('should'),
     sinon = require('sinon'),
     YouTubeService = require('youtube-node'),
-    VideoHandlers = require('../handlers/video'),
-    YouTubeWrapper = require('../youtube');
+    VideoHandlers = require('../../mongo/video'),
+    YouTubeWrapper = require('../../youtube');
 
 function makeModelStub(stubs) {
     return sinon.stub(mongoose, 'model', function() {
@@ -37,7 +37,7 @@ function makeResponseVerifyStub(expectedResCode, expectedResObj, doneFunc) {
     };
 }
 
-describe('video handlers', function() {
+describe('video mongo handlers', function() {
     var mongooseStubHandle;
     var youtubeServiceStub = new YouTubeService();
     var youtubeWrapperStub = new YouTubeWrapper(youtubeServiceStub);
