@@ -5,11 +5,14 @@ var mongoose = require('mongoose'),
     VideoHandlers = require('../handlers/video'),
     YouTubeWrapper = require('../youtube');
 
-function makeModelFindOneStub(err, rawFoundVideo) {
+function makeModelStub(stubs) {
     return sinon.stub(mongoose, 'model', function() {
         return {
             findOne: function(query, callback) {
-                callback(err, rawFoundVideo);
+                callback(stubs.err, stubs.foundVideo);
+            },
+            find: function(query, callback) {
+                callback(stubs.err, stubs.foundVideoList);
             },
             schema: {
                 paths: {
@@ -50,40 +53,40 @@ describe('video handlers', function() {
         mongooseStubHandle.restore();
     });
 
-    describe('#getSingleVideo', function() {
+    describe('#getSingleVideo, #deleteVideo', function() {
         describe('unit', function() {
             it('error response from database', function(done) {
-                var errorStub = 'stub error';
-                var findOneStubHandle = makeModelFindOneStub(errorStub);
-                var responseStub = makeResponseVerifyStub(500, {error: errorStub}, done);
+                var stubErr = 'stub error';
+                var modelStubHandle = makeModelStub({err: stubErr});
+                var responseStub = makeResponseVerifyStub(500, {error: stubErr}, done);
                 try {
                     var videoHandlers = new VideoHandlers(mongoose, youtubeWrapperStub);
                     videoHandlers.getSingleVideo(requestStub, responseStub);
                 } finally {
-                    findOneStubHandle.restore();
+                    modelStubHandle.restore();
                 }
             });
 
             it('found video in database', function(done) {
-                var videoStub = {stubField: ''};
-                var findOneStubHandle = makeModelFindOneStub(null, videoStub);
-                var responseStub = makeResponseVerifyStub(200, videoStub, done);
+                var stubFoundVideo = {stubField: ''};
+                var modelStubHandle = makeModelStub({foundVideo: stubFoundVideo});
+                var responseStub = makeResponseVerifyStub(200, stubFoundVideo, done);
                 try {
                     var videoHandlers = new VideoHandlers(mongoose, youtubeWrapperStub);
                     videoHandlers.getSingleVideo(requestStub, responseStub);
                 } finally {
-                    findOneStubHandle.restore();
+                    modelStubHandle.restore();
                 }
             });
 
             it('did not find video in database', function(done) {
-                var findOneStubHandle = makeModelFindOneStub(null, null);
+                var modelStubHandle = makeModelStub({});
                 var responseStub = makeResponseVerifyStub(404, {error: 'No data stored for video with Youtube id: undefined'}, done);
                 try {
                     var videoHandlers = new VideoHandlers(mongoose, youtubeWrapperStub);
                     videoHandlers.getSingleVideo(requestStub, responseStub);
                 } finally {
-                    findOneStubHandle.restore();
+                    modelStubHandle.restore();
                 }
             });
         });
@@ -91,15 +94,33 @@ describe('video handlers', function() {
 
     describe('#getAllVideos', function() {
         describe('unit', function() {
+            it('error response from database', function(done) {
+                var stubErr = 'stub error';
+                var modelStubHandle = makeModelStub({err: stubErr});
+                var responseStub = makeResponseVerifyStub(500, {error: stubErr}, done);
+                try {
+                    var videoHandlers = new VideoHandlers(mongoose, youtubeWrapperStub);
+                    videoHandlers.getAllVideos(requestStub, responseStub);
+                } finally {
+                    modelStubHandle.restore();
+                }
+            });
+
+            it('found videos in database', function(done) {
+                var stubFoundVideoList = [{stubField: ''}];
+                var modelStubHandle = makeModelStub({foundVideoList: stubFoundVideoList});
+                var responseStub = makeResponseVerifyStub(200, stubFoundVideoList, done);
+                try {
+                    var videoHandlers = new VideoHandlers(mongoose, youtubeWrapperStub);
+                    videoHandlers.getAllVideos(requestStub, responseStub);
+                } finally {
+                    modelStubHandle.restore();
+                }
+            });
         });
     });
 
     describe('#upsertVideo', function() {
-        describe('unit', function() {
-        });
-    });
-
-    describe('#deleteVideo', function() {
         describe('unit', function() {
         });
     });

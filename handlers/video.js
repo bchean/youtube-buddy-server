@@ -47,54 +47,111 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     var videoDb = initVideoDbSchema(mongoose);
 
     // ------------------------
-    // Request handlers
+    // Request handlers and callback factories
     // ------------------------
 
     function getSingleVideo(req, res) {
         var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOne(makeVideoQuery(reqYoutubeId), function(err, rawFoundVideo) {
+        videoDb.model.findOne(
+                makeVideoQuery(reqYoutubeId),
+                makeErrorSuccessOrNotFoundCallback(
+                    res,
+                    logAndSendErrorResponse,
+                    'Failed to get video data:',
+                    trimAndSendVideo,
+                    sendNoVideoDataResponse,
+                    reqYoutubeId));
+    }
+
+    function makeErrorSuccessOrNotFoundCallback(res, errorFunc, errMsg, successFunc, notFoundFunc, notFoundData) {
+        return function(err, successData) {
             if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to get video data:');
-            } else if (rawFoundVideo) {
-                trimAndSendVideo(res, rawFoundVideo);
+                errorFunc(res, err, errMsg);
+            } else if (successData) {
+                successFunc(res, successData);
             } else {
-                sendNoVideoDataResponse(res, reqYoutubeId);
+                notFoundFunc(res, notFoundData);
             }
-        });
+        };
     }
 
     function getAllVideos(req, res) {
-        videoDb.model.find({}, function(err, rawVideoList) {
+        videoDb.model.find(
+                {},
+                makeErrorOrSuccessCallback(
+                    res,
+                    logAndSendErrorResponse,
+                    'Failed to get video data:',
+                    trimAndSendVideoList));
+    }
+
+    function makeErrorOrSuccessCallback(res, errorFunc, errMsg, successFunc) {
+        return function(err, successData) {
             if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to get video data:');
+                errorFunc(res, err, errMsg);
             } else {
-                trimAndSendVideoList(res, rawVideoList);
+                successFunc(res, successData);
             }
-        });
+        };
     }
 
     function upsertVideo(req, res) {
         var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOne(makeVideoQuery(reqYoutubeId), function(err, rawFoundVideo) {
-            if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to find requested video data:');
-            } else if (rawFoundVideo) {
-                updateVideo(res, rawFoundVideo);
-            } else {
-                createVideo(res, reqYoutubeId);
-            }
-        });
+        videoDb.model.findOne(
+                makeVideoQuery(reqYoutubeId),
+                makeErrorSuccessOrNotFoundCallback(
+                    res,
+                    logAndSendErrorResponse,
+                    'Failed to find requested video data:',
+                    updateVideo,
+                    createVideo,
+                    reqYoutubeId));
     }
 
     function deleteVideo(req, res) {
         var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOneAndRemove(makeVideoQuery(reqYoutubeId), function(err, rawFoundVideo) {
+        videoDb.model.findOneAndRemove(
+                makeVideoQuery(reqYoutubeId),
+                makeErrorSuccessOrNotFoundCallback(
+                    res,
+                    logAndSendErrorResponse,
+                    'Failed to get video data:',
+                    trimAndSendVideo,
+                    sendNoVideoDataResponse,
+                    reqYoutubeId));
+    }
+
+    function updateVideo(res, rawVideo) {
+        rawVideo[NUM_IMPRESSIONS_FIELDNAME] += 1;
+        // TODO recalculate popularity
+        rawVideo.save(function(err) {
             if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to remove requested video data:');
-            } else if (rawFoundVideo) {
-                trimAndSendVideo(res, rawFoundVideo);
+                logAndSendErrorResponse(res, err, 'Failed to update video data:');
             } else {
-                sendNoVideoDataResponse(res, reqYoutubeId);
+                trimAndSendVideo(res, rawVideo);
+            }
+        });
+    }
+
+    function createVideo(res, youtubeId) {
+        youtubeWrapper.getVideoInfo(youtubeId, function(err, videoInfo) {
+            if (err) {
+                logAndSendErrorResponse(res, err, 'Failed to fetch Youtube video metadata:');
+            } else {
+                var newVideoObj = {};
+                newVideoObj[YOUTUBE_ID_FIELDNAME] = youtubeId;
+                newVideoObj[TITLE_FIELDNAME] = videoInfo.title;
+                newVideoObj[NUM_IMPRESSIONS_FIELDNAME] = 1;
+                newVideoObj[LENGTH_SECONDS_FIELDNAME] = videoInfo.lengthSeconds;
+                newVideoObj[POPULARITY_FIELDNAME] = 0.0;
+
+                videoDb.model.create(
+                        newVideoObj,
+                        makeErrorOrSuccessCallback(
+                            res,
+                            logAndSendErrorResponse,
+                            'Failed to create video data:',
+                            trimAndSendVideo));
             }
         });
     }
@@ -138,41 +195,6 @@ function VideoHandlers(mongoose, youtubeWrapper) {
             }
         }
         return trimmedVideo;
-    }
-
-    function updateVideo(res, rawVideo) {
-        rawVideo[NUM_IMPRESSIONS_FIELDNAME] += 1;
-        // TODO recalculate popularity
-        rawVideo.save(function(err) {
-            if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to update video data:');
-            } else {
-                trimAndSendVideo(res, rawVideo);
-            }
-        });
-    }
-
-    function createVideo(res, youtubeId) {
-        youtubeWrapper.getVideoInfo(youtubeId, function(err, videoInfo) {
-            if (err) {
-                logAndSendErrorResponse(res, err, 'Failed to fetch Youtube video metadata:');
-            } else {
-                var newVideoObj = {};
-                newVideoObj[YOUTUBE_ID_FIELDNAME] = youtubeId;
-                newVideoObj[TITLE_FIELDNAME] = videoInfo.title;
-                newVideoObj[NUM_IMPRESSIONS_FIELDNAME] = 1;
-                newVideoObj[LENGTH_SECONDS_FIELDNAME] = videoInfo.lengthSeconds;
-                newVideoObj[POPULARITY_FIELDNAME] = 0.0;
-
-                videoDb.model.create(newVideoObj, function(err, rawCreatedVideo) {
-                    if (err) {
-                        logAndSendErrorResponse(res, err, 'Failed to create video data:');
-                    } else {
-                        trimAndSendVideo(res, rawCreatedVideo);
-                    }
-                });
-            }
-        });
     }
 
     self.getSingleVideo = getSingleVideo;
