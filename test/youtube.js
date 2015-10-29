@@ -8,10 +8,10 @@ describe('youtube', function() {
         describe('E2E (live YouTube API)', function() {
             it('valid YouTube id', function(done) {
                 var youtubeWrapper = new YouTubeWrapper();
-                youtubeWrapper.getVideoInfo('6dBt3mJtgJc', function(err, videoInfo) {
+                youtubeWrapper.getVideoInfo('TnYacrJuc7g', function(err, videoInfo) {
                     should.not.exist(err);
-                    videoInfo.title.should.equal('Joy Division - Transmission [OFFICIAL MUSIC VIDEO]');
-                    videoInfo.lengthSeconds.should.equal(211);
+                    videoInfo.title.should.equal('Test video for YouTube Buddy Server');
+                    videoInfo.lengthSeconds.should.equal(6);
                     done();
                 });
             });

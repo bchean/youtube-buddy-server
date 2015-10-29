@@ -1,6 +1,7 @@
 {
   "name": "youtube-buddy",
   "dependencies": {
+    "dotenv": "^1.2.0",
     "express": "^4.13.3",
     "moment": "^2.10.6",
     "mongoose": "^4.1.1",
@@ -15,6 +16,6 @@
   "scripts": {
     "lint": "jshint . || true",
     "test": "mocha --recursive --grep unit test/",
-    "test-all": "mocha test/"
+    "test-all": "mocha --recursive test/"
   }
 }
