@@ -15,7 +15,8 @@
   },
   "scripts": {
     "lint": "jshint . || true",
-    "test": "mocha --recursive --grep unit test/",
-    "test-all": "mocha --recursive test/"
+    "test": "mocha --recursive test/unit",
+    "test-all": "mocha --recursive test",
+    "test-e2e": "mocha --recursive test/e2e"
   }
 }
