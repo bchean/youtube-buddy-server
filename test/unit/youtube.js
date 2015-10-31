@@ -3,7 +3,7 @@ var should = require('should'),
     YouTubeService = require('youtube-node'),
     YouTubeWrapper = require('../../youtube');
 
-describe('youtube [unit]', function() {
+describe('[unit] youtube', function() {
     describe('#getVideoInfo', function() {
         it('error response from YouTube API', function(done) {
             var stubYoutube = new YouTubeService();

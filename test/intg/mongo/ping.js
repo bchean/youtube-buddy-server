@@ -7,7 +7,7 @@ var mongoose = require('mongoose'),
 var CUSTOM_TIMEOUT = 5000;
 mongoose.connect(config.mongoUri);
 
-describe('ping mongo handlers [e2e]', function() {
+describe('[intg] ping mongo handlers', function() {
     this.timeout(CUSTOM_TIMEOUT);
 
     var Ping = new PingModel(mongoose, 'ping_test');

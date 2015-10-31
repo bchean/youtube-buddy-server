@@ -18,6 +18,6 @@
     "lint": "jshint . || true",
     "test": "mocha --recursive test/unit",
     "test-all": "mocha --recursive test",
-    "test-e2e": "mocha --recursive test/e2e"
+    "test-intg": "mocha --recursive test/intg"
   }
 }

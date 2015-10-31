@@ -1,7 +1,7 @@
 var should = require('should'),
     YouTubeWrapper = require('../../youtube');
 
-describe('youtube [e2e]', function() {
+describe('[intg] youtube', function() {
     describe('#getVideoInfo', function() {
         it('valid YouTube id', function(done) {
             var youtubeWrapper = new YouTubeWrapper();

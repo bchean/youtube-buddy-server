@@ -37,7 +37,7 @@ function makeResponseVerifyStub(expectedResCode, expectedResObj, doneFunc) {
     };
 }
 
-describe('video mongo handlers [unit]', function() {
+describe('[unit] video mongo handlers', function() {
     var mongooseStubHandle;
     var youtubeServiceStub = new YouTubeService();
     var youtubeWrapperStub = new YouTubeWrapper(youtubeServiceStub);
