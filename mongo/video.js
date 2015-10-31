@@ -1,5 +1,3 @@
-var config = require('../config');
-
 var YOUTUBE_ID_FIELDNAME = 'youtubeId';
 var TITLE_FIELDNAME = 'title';
 var NUM_IMPRESSIONS_FIELDNAME = 'numImpressions';
@@ -7,8 +5,6 @@ var LENGTH_SECONDS_FIELDNAME = 'lengthSeconds';
 var POPULARITY_FIELDNAME = 'popularity';
 
 function initVideoDbSchema(mongoose) {
-    mongoose.connect(config.mongoUri);
-
     var Schema = mongoose.Schema;
 
     var videoSchemaObject = {};
