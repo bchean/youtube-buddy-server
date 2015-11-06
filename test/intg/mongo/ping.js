@@ -20,7 +20,31 @@ describe('[intg] ping mongo handlers', function() {
     });
 
     describe('#getRecentPings', function() {
-        it('', function() {
+        it('empty result', function(done) {
+            var pingQuery = {sinceDateTime: new Date()};
+            var req = {body: pingQuery};
+            var expectedResults = [];
+            var resStub = makeGetRecentPingsResStub(expectedResults, done);
+            pingHandlers.getRecentPings(req, resStub);
+        });
+
+        it('nonempty result', function(done) {
+            var pingsToCreate = [
+                {dateTime: new Date(0), youtubeId: 'a'},
+                {dateTime: new Date(1), youtubeId: 'a'},
+                {dateTime: new Date(2), youtubeId: 'a'}
+            ];
+            Ping.create(pingsToCreate, function(err, createdPings) {
+                var pingQuery = {sinceDateTime: new Date(1)};
+                var req = {body: pingQuery};
+                // Results should be sorted in descending chronological order.
+                var expectedResults = [
+                    {dateTime: new Date(2), youtubeId: 'a'},
+                    {dateTime: new Date(1), youtubeId: 'a'}
+                ];
+                var resStub = makeGetRecentPingsResStub(expectedResults, done);
+                pingHandlers.getRecentPings(req, resStub);
+            });
         });
     });
 
@@ -31,7 +55,7 @@ describe('[intg] ping mongo handlers', function() {
                 youtubeId: 'TnYacrJuc7g'
             };
             var req = {body: pingQuery};
-            var resStub = makeResStub(Ping, pingQuery, done);
+            var resStub = makePingVideoResStub(Ping, pingQuery, done);
             pingHandlers.pingVideo(req, resStub);
         });
     });
@@ -41,8 +65,16 @@ function removeAllPings(pingModel, done) {
     pingModel.remove({}, done);
 }
 
-function makeResStub(pingModel, pingQuery, done) {
-    function verifyFunc() {
+function makeGetRecentPingsResStub(expectedResult, done) {
+    function verifyResult(actualResult) {
+        actualResult.should.deepEqual(expectedResult);
+        done();
+    }
+    return makeResStub(verifyResult);
+}
+
+function makePingVideoResStub(pingModel, pingQuery, done) {
+    function verifyPingWasCreated() {
         pingModel.find({dateTime: pingQuery.dateTime}, function(err, foundPingList) {
             should.not.exist(err);
             var result = foundPingList[0];
@@ -51,13 +83,14 @@ function makeResStub(pingModel, pingQuery, done) {
                 dateTime: result.dateTime,
                 youtubeId: result.youtubeId
             };
-            try {
-                trimmedResult.should.deepEqual(pingQuery);
-            } finally {
-                done();
-            }
+            trimmedResult.should.deepEqual(pingQuery);
+            done();
         });
     }
+    return makeResStub(verifyPingWasCreated);
+}
+
+function makeResStub(verifyFunc) {
     return {
         status: function() {
             return {

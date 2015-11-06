@@ -10,10 +10,19 @@ function PingHandlers(pingModel) {
     // ------------------------
 
     function getRecentPings(req, res) {
-        pingModel.find({}, function(err, foundPingList) {
+        var sinceQuery = {
+            dateTime: {
+                $gte: req.body.sinceDateTime
+            }
+        };
+        pingModel.find(sinceQuery, function(err, foundPingList) {
             if (err) {
                 resUtil.logAndSendError(res, err);
             } else {
+                foundPingList.sort(function(first, second) {
+                    // Sort in descending chronological order.
+                    return second.dateTime - first.dateTime;
+                });
                 resUtil.trimAndSendRecords(res, foundPingList, trimRawPing);
             }
         });
