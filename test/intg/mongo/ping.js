@@ -34,7 +34,11 @@ describe('[intg] ping mongo handlers', function() {
                 {dateTime: new Date(1), youtubeId: 'a'},
                 {dateTime: new Date(2), youtubeId: 'a'}
             ];
-            Ping.create(pingsToCreate, function(err, createdPings) {
+            Ping.create(pingsToCreate, function(/*err*/) {
+                // I have no idea how to cleanly assert that err is undefined. At this point in the
+                // code, failing asserts just screw up the whole test. God damn javascript dude.
+                // Commenting out the parameter so lint doesn't catch it.
+
                 var pingQuery = {sinceDateTime: new Date(1)};
                 var req = {body: pingQuery};
                 // Results should be sorted in descending chronological order.

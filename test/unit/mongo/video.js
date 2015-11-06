@@ -1,5 +1,5 @@
+require('should');
 var mongoose = require('mongoose'),
-    should = require('should'),
     sinon = require('sinon'),
     YouTubeService = require('youtube-node'),
     VideoHandlers = require('../../../mongo/video'),
