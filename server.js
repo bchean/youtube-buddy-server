@@ -1,4 +1,5 @@
 var bodyParser = require('body-parser'),
+    cors = require('cors'),
     express = require('express'),
     mongoose = require('mongoose'),
     YouTubeService = require('youtube-node'),
@@ -27,6 +28,7 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 
 app.route(PING_URI)
+    .all(cors())
     .get(pingHandlers.getRecentPings)
     .post(pingHandlers.pingVideo);
 
