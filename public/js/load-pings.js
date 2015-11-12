@@ -1,7 +1,7 @@
 var MS_PER_DAY = 24*60*60*1000;
 var now_ms = Date.now();
-var oneDayAgo = new Date(now_ms - MS_PER_DAY);
-var oneWeekAgo = new Date(now_ms - 7*MS_PER_DAY);
+var oneDayAgo = new Date(now_ms - MS_PER_DAY).toISOString();
+var oneWeekAgo = new Date(now_ms - 7*MS_PER_DAY).toISOString();
 
 $.ajax({
     method: 'GET',

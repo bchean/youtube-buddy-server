@@ -12,7 +12,7 @@ function PingHandlers(pingModel) {
     function getRecentPings(req, res) {
         var sinceQuery = {
             dateTime: {
-                $gte: req.body.sinceDateTime
+                $gte: req.query.sinceDateTime
             }
         };
         pingModel.find(sinceQuery, function(err, foundPingList) {
