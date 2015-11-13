@@ -22,7 +22,7 @@ describe('[intg] ping mongo handlers', function() {
     describe('#getRecentPings', function() {
         it('empty result', function(done) {
             var pingQuery = {sinceDateTime: new Date()};
-            var req = {body: pingQuery};
+            var req = {query: pingQuery};
             var expectedResults = [];
             var resStub = makeGetRecentPingsResStub(expectedResults, done);
             pingHandlers.getRecentPings(req, resStub);
@@ -32,7 +32,8 @@ describe('[intg] ping mongo handlers', function() {
             var pingsToCreate = [
                 {dateTime: new Date(0), youtubeId: 'a'},
                 {dateTime: new Date(1), youtubeId: 'a'},
-                {dateTime: new Date(2), youtubeId: 'a'}
+                {dateTime: new Date(2), youtubeId: 'b'},
+                {dateTime: new Date(3), youtubeId: 'b'}
             ];
             Ping.create(pingsToCreate, function(/*err*/) {
                 // I have no idea how to cleanly assert that err is undefined. At this point in the
@@ -40,12 +41,17 @@ describe('[intg] ping mongo handlers', function() {
                 // Commenting out the parameter so lint doesn't catch it.
 
                 var pingQuery = {sinceDateTime: new Date(1)};
-                var req = {body: pingQuery};
+                var req = {query: pingQuery};
                 // Results should be sorted in descending chronological order.
-                var expectedResults = [
-                    {dateTime: new Date(2), youtubeId: 'a'},
-                    {dateTime: new Date(1), youtubeId: 'a'}
-                ];
+                var expectedResults = [{
+                    youtubeId: 'b',
+                    dateTimeLastPing: new Date(3),
+                    numPings: 2
+                }, {
+                    youtubeId: 'a',
+                    dateTimeLastPing: new Date(1),
+                    numPings: 1
+                }];
                 var resStub = makeGetRecentPingsResStub(expectedResults, done);
                 pingHandlers.getRecentPings(req, resStub);
             });

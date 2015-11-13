@@ -8,16 +8,17 @@ $.ajax({
     url: 'api/pings',
     data: {sinceDateTime: oneDayAgo},
     dataType: 'json'
-}).done(function(data) {
+}).done(function(videoPingInfoList) {
     $('.pings-loading').remove();
-    if (data.length) {
-        for (var i = 0; i < data.length; i++) {
-            var ping = data[i];
+    if (videoPingInfoList.length) {
+        for (var i = 0; i < videoPingInfoList.length; i++) {
+            var videoPingInfo = videoPingInfoList[i];
             $('.pings-data').append(
                 '<div class="ping">' +
-                '[' + ping.dateTime + '] ' +
-                '<a href="https://www.youtube.com/watch?v=' + ping.youtubeId + '" target="_blank">' +
-                ping.youtubeId + '</a></div>');
+                '[' + videoPingInfo.numPings + '] ' +
+                '<a href="https://www.youtube.com/watch?v=' + videoPingInfo.youtubeId + '" target="_blank">' +
+                videoPingInfo.youtubeId + '</a> ' +
+                '<i>' + new Date(videoPingInfo.dateTimeLastPing).toLocaleString() + '</i></div>');
         }
     } else {
         $('.pings-data').append('No pings in the last 24 hours!');

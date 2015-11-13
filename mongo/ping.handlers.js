@@ -1,4 +1,5 @@
-var ResUtil = require('../res-util');
+var _ = require('underscore'),
+    ResUtil = require('../res-util');
 
 function PingHandlers(pingModel) {
     var self = this;
@@ -19,11 +20,25 @@ function PingHandlers(pingModel) {
             if (err) {
                 resUtil.logAndSendError(res, err);
             } else {
-                foundPingList.sort(function(first, second) {
-                    // Sort in descending chronological order.
-                    return second.dateTime - first.dateTime;
-                });
-                resUtil.trimAndSendRecords(res, foundPingList, trimRawPing);
+                var videoPingInfoList = _.chain(foundPingList)
+                    .groupBy('youtubeId')
+                    .mapObject(function(pingsForVideo) {
+                        var dateTimeLastPing = _.chain(pingsForVideo)
+                            .map('dateTime')
+                            .sort()
+                            .last()
+                            .value();
+                        return {
+                            youtubeId: pingsForVideo[0].youtubeId,
+                            dateTimeLastPing: dateTimeLastPing,
+                            numPings: pingsForVideo.length,
+                        };
+                    })
+                    .values()
+                    .sortBy('numPings')
+                    .reverse()
+                    .value();
+                res.status(200).send(videoPingInfoList);
             }
         });
     }
