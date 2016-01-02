@@ -6,7 +6,8 @@ var bodyParser = require('body-parser'),
     config = require('./config'),
     PingHandlers = require('./mongo/ping.handlers'),
     PingModel = require('./mongo/ping.model'),
-    VideoHandlers = require('./mongo/video'),
+    VideoHandlers = require('./mongo/video.handlers'),
+    VideoModel = require('./mongo/video.model'),
     YouTubeWrapper = require('./youtube');
 
 var PING_URI = '/api/pings';
@@ -19,7 +20,7 @@ var youtubeWrapper = new YouTubeWrapper(new YouTubeService());
 
 mongoose.connect(config.mongoUri);
 var pingHandlers = new PingHandlers(new PingModel(mongoose));
-var videoHandlers = new VideoHandlers(mongoose, youtubeWrapper);
+var videoHandlers = new VideoHandlers(new VideoModel(mongoose), youtubeWrapper);
 
 // Root directory serves static files.
 app.use(express.static('public'));
@@ -41,5 +42,5 @@ app.route(SINGLE_VIDEO_URI)
     .delete(videoHandlers.deleteVideo);
 
 app.listen(config.expressPort, function() {
-    console.log('App started.');
+    console.log('App started on port ' + config.expressPort);
 });

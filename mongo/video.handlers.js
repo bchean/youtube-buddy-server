@@ -1,55 +1,18 @@
-var YOUTUBE_ID_FIELDNAME = 'youtubeId';
-var TITLE_FIELDNAME = 'title';
-var NUM_IMPRESSIONS_FIELDNAME = 'numImpressions';
-var LENGTH_SECONDS_FIELDNAME = 'lengthSeconds';
-var POPULARITY_FIELDNAME = 'popularity';
+var ResUtil = require('../res-util');
 
-function initVideoDbSchema(mongoose) {
-    var Schema = mongoose.Schema;
-
-    var videoSchemaObject = {};
-    videoSchemaObject[YOUTUBE_ID_FIELDNAME] = {
-        type: String,
-        required: true
-    };
-    videoSchemaObject[TITLE_FIELDNAME] = {
-        type: String,
-        required: true
-    };
-    videoSchemaObject[NUM_IMPRESSIONS_FIELDNAME] = {
-        type: Number,
-        required: true
-    };
-    videoSchemaObject[LENGTH_SECONDS_FIELDNAME] = {
-        type: Number,
-        required: true
-    };
-    videoSchemaObject[POPULARITY_FIELDNAME] = {
-        type: Number,
-        required: true
-    };
-
-    var VideoSchema = new Schema(videoSchemaObject);
-    var VideoModel = mongoose.model('Video', VideoSchema);
-
-    return {
-        model: VideoModel
-    };
-}
-
-function VideoHandlers(mongoose, youtubeWrapper) {
+function VideoHandlers(videoModel, youtubeWrapper) {
     var self = this;
 
-    var videoDb = initVideoDbSchema(mongoose);
+    var resUtil = new ResUtil();
 
     // ------------------------
     // Request handlers and callback factories
     // ------------------------
 
     function getSingleVideo(req, res) {
-        var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOne(
-                makeVideoQuery(reqYoutubeId),
+        var reqYoutubeId = req.params.youtubeId;
+        videoModel.findOne(
+                {youtubeId: reqYoutubeId},
                 makeErrorSuccessOrNotFoundCallback(
                     res,
                     logAndSendErrorResponse,
@@ -72,7 +35,7 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     }
 
     function getAllVideos(req, res) {
-        videoDb.model.find(
+        videoModel.find(
                 {},
                 makeErrorOrSuccessCallback(
                     res,
@@ -92,9 +55,9 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     }
 
     function upsertVideo(req, res) {
-        var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOne(
-                makeVideoQuery(reqYoutubeId),
+        var reqYoutubeId = req.params.youtubeId;
+        videoModel.findOne(
+                {youtubeId: reqYoutubeId},
                 makeErrorSuccessOrNotFoundCallback(
                     res,
                     logAndSendErrorResponse,
@@ -105,9 +68,9 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     }
 
     function deleteVideo(req, res) {
-        var reqYoutubeId = req.params[YOUTUBE_ID_FIELDNAME];
-        videoDb.model.findOneAndRemove(
-                makeVideoQuery(reqYoutubeId),
+        var reqYoutubeId = req.params.youtubeId;
+        videoModel.findOneAndRemove(
+                {youtubeId: reqYoutubeId},
                 makeErrorSuccessOrNotFoundCallback(
                     res,
                     logAndSendErrorResponse,
@@ -118,7 +81,7 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     }
 
     function updateVideo(res, rawVideo) {
-        rawVideo[NUM_IMPRESSIONS_FIELDNAME] += 1;
+        rawVideo.numImpressions += 1;
         // TODO recalculate popularity
         rawVideo.save(function(err) {
             if (err) {
@@ -135,13 +98,13 @@ function VideoHandlers(mongoose, youtubeWrapper) {
                 logAndSendErrorResponse(res, err, 'Failed to fetch Youtube video metadata:');
             } else {
                 var newVideoObj = {};
-                newVideoObj[YOUTUBE_ID_FIELDNAME] = youtubeId;
-                newVideoObj[TITLE_FIELDNAME] = videoInfo.title;
-                newVideoObj[NUM_IMPRESSIONS_FIELDNAME] = 1;
-                newVideoObj[LENGTH_SECONDS_FIELDNAME] = videoInfo.lengthSeconds;
-                newVideoObj[POPULARITY_FIELDNAME] = 0.0;
+                newVideoObj.youtubeId = youtubeId;
+                newVideoObj.title = videoInfo.title;
+                newVideoObj.numImpressions = 1;
+                newVideoObj.lengthSeconds = videoInfo.lengthSeconds;
+                newVideoObj.popularity = 0.0;
 
-                videoDb.model.create(
+                videoModel.create(
                         newVideoObj,
                         makeErrorOrSuccessCallback(
                             res,
@@ -155,12 +118,6 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     // ------------------------
     // Helpers
     // ------------------------
-
-    function makeVideoQuery(youtubeId) {
-        var conditions = {};
-        conditions[YOUTUBE_ID_FIELDNAME] = youtubeId;
-        return conditions;
-    }
 
     function logAndSendErrorResponse(res, errorWhatever, errorMessage) {
         console.log(errorMessage);
@@ -183,14 +140,13 @@ function VideoHandlers(mongoose, youtubeWrapper) {
     }
 
     function trimRawVideo(rawVideo) {
-        var trimmedVideo = {};
-        for (var field in videoDb.model.schema.paths) {
-            // Don't copy built-in Mongo fields
-            if (field[0] !== '_') {
-                trimmedVideo[field] = rawVideo[field];
-            }
-        }
-        return trimmedVideo;
+        return {
+            youtubeId: rawVideo.youtubeId,
+            title: rawVideo.title,
+            numImpressions: rawVideo.numImpressions,
+            lengthSeconds: rawVideo.lengthSeconds,
+            popularity: rawVideo.popularity
+        };
     }
 
     self.getSingleVideo = getSingleVideo;
