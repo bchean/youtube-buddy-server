@@ -1,4 +1,4 @@
-function PingModel(mongoose, collectionName) {
+function get(mongoose, mongooseConnection, collectionName) {
     collectionName = collectionName || 'ping';
     var Schema = mongoose.Schema;
     var PingSchema = new Schema({
@@ -11,7 +11,17 @@ function PingModel(mongoose, collectionName) {
             required: true
         }
     });
-    return mongoose.model(collectionName, PingSchema);
+    return mongooseConnection.model(collectionName, PingSchema);
 }
 
-module.exports = PingModel;
+function trimRawPing(rawPing) {
+    return {
+        dateTime: rawPing.dateTime,
+        youtubeId: rawPing.youtubeId
+    };
+}
+
+module.exports = {
+    get: get,
+    trimRawPing: trimRawPing
+};

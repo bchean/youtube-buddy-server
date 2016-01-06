@@ -20,9 +20,9 @@ function doAjax(sinceDateTime, loadingSelector, durationLabel) {
                 var videoPingInfo = videoPingInfoList[i];
                 dataContainer.append(
                     '<div class="ping">' +
-                    '[' + videoPingInfo.numPings + '] ' +
+                    '[' + videoPingInfo.numRecentPings + '] ' +
                     '<a href="https://www.youtube.com/watch?v=' + videoPingInfo.youtubeId + '" target="_blank">' +
-                    videoPingInfo.youtubeId + '</a> ' +
+                    videoPingInfo.title + '</a> ' +
                     '<i>' + new Date(videoPingInfo.dateTimeLastPing).toLocaleString() + '</i></div>');
             }
         } else {

@@ -1,70 +1,48 @@
-var _ = require('underscore'),
-    ResUtil = require('../res-util');
+var ResUtil = require('../res-util'),
+    PingModel = require('./ping.model');
 
-function PingHandlers(pingModel) {
+function PingHandlers(pingController) {
     var self = this;
 
-    var resUtil = new ResUtil();
-
-    // ------------------------
+    // ----------------
     // Request handlers
-    // ------------------------
+    // ----------------
 
     function getRecentPings(req, res) {
-        var sinceQuery = {
-            dateTime: {
-                $gte: req.query.sinceDateTime
-            }
-        };
-        pingModel.find(sinceQuery, function(err, foundPingList) {
-            if (err) {
-                resUtil.logAndSendError(res, err);
-            } else {
-                var videoPingInfoList = _.chain(foundPingList)
-                    .groupBy('youtubeId')
-                    .mapObject(function(pingsForVideo) {
-                        var dateTimeLastPing = _.chain(pingsForVideo)
-                            .map('dateTime')
-                            .sort()
-                            .last()
-                            .value();
-                        return {
-                            youtubeId: pingsForVideo[0].youtubeId,
-                            dateTimeLastPing: dateTimeLastPing,
-                            numPings: pingsForVideo.length,
-                        };
-                    })
-                    .values()
-                    .sortBy('numPings')
-                    .reverse()
-                    .value();
-                res.status(200).send(videoPingInfoList);
-            }
-        });
+        var sinceDateTime = req.query.sinceDateTime;
+        pingController.getRecentPings(
+                sinceDateTime,
+                makeFoundPingListHook(res),
+                ResUtil.makeErrHook(res));
     }
 
     function pingVideo(req, res) {
-        var newPing = {
-            dateTime: req.body.dateTime,
-            youtubeId: req.body.youtubeId
-        };
-        pingModel.create(newPing, function(err, createdPing) {
-            if (err) {
-                resUtil.logAndSendError(res, err);
-            } else {
-                resUtil.trimAndSendRecords(res, [createdPing], trimRawPing);
-            }
-        });
+        var dateTime = req.body.dateTime;
+        var youtubeId = req.body.youtubeId;
+        pingController.pingVideo(
+                dateTime,
+                youtubeId,
+                makePingCreatedHook(res),
+                ResUtil.makeErrHook(res));
     }
 
-    // ------------------------
-    // Helpers
-    // ------------------------
+    // --------------
+    // Hook factories
+    // --------------
 
-    function trimRawPing(rawPing) {
-        return {
-            dateTime: rawPing.dateTime,
-            youtubeId: rawPing.youtubeId
+    function makeFoundPingListHook(res) {
+        return function(foundPingList) {
+            ResUtil.trimAndSendRecordListResponse(res, foundPingList, noTrim);
+        };
+    }
+
+    function noTrim(x) {
+        return x;
+    }
+
+    function makePingCreatedHook(res) {
+        return function(createdPing) {
+            ResUtil.trimAndSendSingleRecordResponse(res, createdPing, PingModel.trimRawPing);
         };
     }
 

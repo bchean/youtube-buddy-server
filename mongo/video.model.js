@@ -1,4 +1,4 @@
-function VideoModel(mongoose, collectionName) {
+function get(mongoose, mongooseConnection, collectionName) {
     collectionName = collectionName || 'video';
     var Schema = mongoose.Schema;
     var VideoSchema = new Schema({
@@ -10,20 +10,28 @@ function VideoModel(mongoose, collectionName) {
             type: String,
             required: true
         },
-        numImpressions: {
+        numPings: {
             type: Number,
             required: true
         },
         lengthSeconds: {
             type: Number,
             required: true
-        },
-        popularity: {
-            type: Number,
-            required: true
         }
     });
-    return mongoose.model(collectionName, VideoSchema);
+    return mongooseConnection.model(collectionName, VideoSchema);
 }
 
-module.exports = VideoModel;
+function trimRawVideo(rawVideo) {
+    return {
+        youtubeId: rawVideo.youtubeId,
+        title: rawVideo.title,
+        numPings: rawVideo.numPings,
+        lengthSeconds: rawVideo.lengthSeconds
+    };
+}
+
+module.exports = {
+    get: get,
+    trimRawVideo: trimRawVideo
+};
